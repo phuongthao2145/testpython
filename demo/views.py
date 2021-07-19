@@ -6,28 +6,29 @@ import os
 from django.urls import reverse
 from .forms import UploadFileForm
 from django.http import HttpResponseRedirect
-from demo.models import Demo
+from demo.models import *
 import django
-from pprint import pprint
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "mysite.settings")
 django.setup()
 
+from django.contrib.auth.decorators import permission_required
 
-# Create your models here.
 
+@permission_required('demo.uploadfile', login_url='auth/login/')
 
 def fileUploaderView(request):
-    if request.method == 'POST':
-        form = UploadFileForm(request.POST, request.FILES)
-        if form.is_valid():
-            upload(request.FILES['file'])
-            return HttpResponseRedirect('savedb/' + request.FILES['file'].name)
-        else:
-            return HttpResponse("<h2>File uploaded not successful!</h2>")
-    form = UploadFileForm()
-    return render(request, 'demo/index.html', {'form': form})
+        if request.method == 'POST':
+            form = UploadFileForm(request.POST, request.FILES)
+            if form.is_valid():
+                upload(request.FILES['file'])
+                return HttpResponseRedirect('savedb/' + request.FILES['file'].name)
+            else:
+                return HttpResponse("<h2>File uploaded not successful!</h2>")
+        form = UploadFileForm()
+        return render(request, 'demo/index.html', {'form': form})
+
 
 
 def search(request):
@@ -37,16 +38,22 @@ def search(request):
 
 
 def detail(request, bn):
-    from inspect import getmembers
-    from pprint import pprint
+    f0 = 0
+    f1 = 0
+    f2 = 0
     id = Demo.objects.filter(patientcode=bn)
     if id[0].status == 'f0':
         p = Demo.objects.filter(f0=id[0].id)
+        f0 = Demo.objects.filter(f0=id[0].id, status='f0').count()
+        f1 = Demo.objects.filter(f0=id[0].id, status='f1').count()
+        f2 = Demo.objects.filter(f0=id[0].id, status='f2').count()
     elif id[0].status == 'f1':
         p = Demo.objects.filter(f1=id[0].id)
+        f1 = Demo.objects.filter(f1=id[0].id, status='f1').count()
+        f2 = Demo.objects.filter(f1=id[0].id, status='f2').count()
     else:
         p = Demo.objects.filter(f2=id[0].id)
-    return render(request, 'demo/detail.html', {'users': p, 'id': id[0]})
+    return render(request, 'demo/detail.html', {'users': p, 'id': id[0], 'f0': f0, 'f1': f1, 'f2': f2})
 
 
 def upload(f):
@@ -55,8 +62,11 @@ def upload(f):
         file.write(chunk)
 
 
-def view(request):
+def index(request):
     users = Demo.objects.order_by('id')[::-1]
+    f0 = Demo.objects.filter(status='f0').count()
+    f1 = Demo.objects.filter(status='f1').count()
+    f2 = Demo.objects.filter(status='f2').count()
     paginator = Paginator(users, 5)
     pageNumber = request.GET.get('page')
     try:
@@ -65,10 +75,10 @@ def view(request):
         users = paginator.page(1)
     except EmptyPage:
         users = paginator.page(paginator.num_pages)
-    return render(request, 'demo/test.html', {'users': users})
+    return render(request, 'demo/test.html', {'users': users, 'f0': f0, 'f1': f1, 'f2': f2})
 
 
-def viewf(request, f):
+def view(request, f):
     users = Demo.objects.filter(status=f)
     paginator = Paginator(users, 5)
     pageNumber = request.GET.get('page')
@@ -126,5 +136,4 @@ def savedb(request, filename):
                     address=row[7].value,
                     )
         cell.save()
-    return HttpResponseRedirect(reverse('demo:view'))
-    #return render(request, 'demo/test1.html', {'users': ff2})
+    return HttpResponseRedirect(reverse('demo:index'))

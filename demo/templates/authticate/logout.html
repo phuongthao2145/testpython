@@ -1,0 +1,33 @@
+{% extends "demo/base.html" %}
+
+{% block content %}
+
+<form action="/admin/login/?next=/admin/" method="post" id="login-form"><input type="hidden" name="csrfmiddlewaretoken"
+                                                                               value="ti0Ok6y7cmywORAj0GbmPemuX7iws9Ko3RVB36GL8cM4gpcZ3BqgT0DqKPAGGxDd">
+    <div class="form-row">
+
+        <label class="required" for="id_username">Username:</label> <input type="text" name="username" autofocus
+                                                                           autocapitalize="none" autocomplete="username"
+                                                                           maxlength="150" required id="id_username">
+    </div>
+    <div class="form-row">
+
+        <label class="required" for="id_password">Password:</label> <input type="password" name="password"
+                                                                           autocomplete="current-password" required
+                                                                           id="id_password">
+        <input type="hidden" name="next" value="/admin/">
+    </div>
+
+
+    <div class="submit-row">
+        <input type="submit" value="Log in">
+    </div>
+</form>
+
+</div>
+
+
+<br class="clear">
+</div>
+
+{% endblock %}

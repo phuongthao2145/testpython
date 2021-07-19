@@ -1,13 +1,14 @@
 <!DOCTYPE html>
 <html lang="en-us">
 <head>
-    <title>{% block title %}My amazing site{% endblock %}</title>
+    <title>{% block title %}Luckbunny{% endblock %}</title>
     <link rel="stylesheet" type="text/css" href="/static/admin/css/base.css">
     <link rel="stylesheet" type="text/css" href="/static/admin/css/nav_sidebar.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
     <script src="/static/admin/js/nav_sidebar.js" defer></script>
     <link rel="stylesheet" type="text/css" href="/static/admin/css/changelists.css">
     <script src="/admin/jsi18n/"></script>
-    <script src="/static/admin/js/vendor/jquery/jquery.js"></script>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <script src="/static/admin/js/jquery.init.js"></script>
     <script src="/static/admin/js/core.js"></script>
     <script src="/static/admin/js/admin/RelatedObjectLookups.js"></script>
@@ -26,26 +27,30 @@
     <!-- Header -->
     <div id="header">
         <div id="branding">
-            <h1 id="site-name"><a href="">Django administration</a></h1>
+            <h1 id="site-name"><a href="">Lucybunny site</a></h1>
         </div>
         <div id="user-tools">
-
+            {% if user.is_authenticated %}
+             Welcome,
+                <strong>{{ user.username }}</strong>.
+                <a href="{% url 'demo:logout' %}">Log out</a>
+            {% endif %}
         </div>
     </div>
     <!-- END Header -->
     <div class="breadcrumbs">
          {% block menu %}
-            <a href="{% url 'demo:index' %}">Import file</a> |
-            <a href="{% url 'demo:view' %}">Home</a> |
-            <a href="{% url 'demo:view' %}/f0">F0</a> |
-            <a href="{% url 'demo:view' %}/f1">F1</a> |
-            <a href="{% url 'demo:view' %}/f2">F2</a> |
+            <a href="{% url 'demo:uploadfile' %}">Import file</a> |
+            <a href="{% url 'demo:index' %}">Home</a> |
+            <a href="{% url 'demo:view' 'f0' %}">F0</a> |
+            <a href="{% url 'demo:view' 'f1' %}">F1</a> |
+            <a href="{% url 'demo:view' 'f2' %}">F2</a> |
             {% endblock %}
     </div>
-    <div class="main" id="main">
+    <div class="main container-fluid" id="main">
         <div class="content">
             <!-- Content -->
-            <div id="content" class="flex">
+            <div id="content" class="flex row">
                 <div id="content-main">
                     <div class="module" id="changelist">
                         <div class="changelist-form-container">
@@ -65,14 +70,18 @@
                     </div>
                 </div>
                 <br class="clear">
-                <div class="results">
+                <div class="results col-7">
                             {% block content %}{% endblock %}
-                        </div>
+                </div>
+                <div id="chart" class="col-5">
+                     {% block chart %}{% endblock %}
+                </div>
             </div>
             <!-- END Content -->
             <div id="footer"></div>
         </div>
     </div>
+
 </div>
 <!-- END Container -->
 </body>
