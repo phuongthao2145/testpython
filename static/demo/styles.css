@@ -1,0 +1,66 @@
+.fas{
+       font-size: 18pt;
+       padding-left:20px
+}
+header{
+    background: #78afc8;
+    color: #fff;
+ }
+ footer{
+ background: #417690;
+    color: #ffc;
+    text-align:center;
+    padding:10px
+ }
+ #branding h1, #branding h1 a:link, #branding h1 a:visited {
+    color: #f5dd5d !important;
+    text-decoration: none !important;
+    font-weight: 300;
+    font-size: 24px;
+}
+#user-tools {
+    font-weight: 300;
+    font-size: 11px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    text-align: right;
+    line-height:36px
+}
+#user-tools a:link, #user-tools a:visited {
+    color: #fff !important;
+    text-decoration: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.25);
+}
+#user-tools a:hover{
+    color:#c4dce8 !important
+}
+.breadcrumbs {
+    background: #79aec8;
+    padding: 10px 0;
+    border: none;
+    font-size: 14px;
+    color: #c4dce8;
+    text-align: left;
+    }
+  div.breadcrumbs a {
+    color: #fff;
+    text-decoration: none;
+}
+div.breadcrumbs a:hover{
+color: rgb(196, 220, 232);
+}
+#search{
+    padding:20px 0
+}
+.update:link{
+text-decoration:none !important;
+padding:5px;
+color: #78afc8 !important;
+white-space: nowrap;
+}
+.update:visited{
+color:  #78afc8 !important;
+}
+.update:hover{
+color: #417690 !important;
+}

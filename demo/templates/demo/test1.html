@@ -1,0 +1,52 @@
+{% extends "demo/base.html" %}
+{% block title %}index{% endblock %}
+
+{% block content %}
+<div style="overflow-x:auto;">
+    <table class="table table-striped table-hover ">
+    <thead>
+    <tr>
+        <th scope="col">ID</th>
+        <th scope="col">Patientcode</th>
+        <th scope="col">Name</th>
+        <th scope="col">Status</th>
+        <th scope="col">F0</th>
+        <th scope="col">F1</th>
+        <th scope="col">F2</th>
+        <th scope="col">Phone</th>
+        <th scope="col">Address</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for row in f1 %}
+    <tr>
+        <td class="field-id">{{ row.id }}</td>
+        <td class="field-patientcode">
+            <a href="{% url 'demo:detail' row.patientcode %}">{{ row.patientcode }}</a>
+        </td>
+        <td class="field-name">{{ row.name }}</td>
+        <td class="field-status">{{ row.status }}</td>
+        <td class="field-f0">
+            {% if row.f0 %}
+            {{ row.f0.name }}
+            {% endif %}
+        </td>
+        <td class="field-f1">
+            {% if row.f1 %}
+            {{ row.f1.name }}
+            {% endif %}
+        </td>
+        <td class="field-f2">
+            {% if row.f2 %}
+            {{ row.f2.name }}
+            {% endif %}
+        </td>
+        <td class="field-phone">{{ row.phone }}</td>
+        <td class="field-address">{{ row.address }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+</div>
+
+{% endblock %}

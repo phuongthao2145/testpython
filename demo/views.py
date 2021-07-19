@@ -9,15 +9,11 @@ from django.http import HttpResponseRedirect
 from demo.models import *
 import django
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-
+from django.contrib.auth.decorators import permission_required
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "mysite.settings")
 django.setup()
 
-from django.contrib.auth.decorators import permission_required
-
-
 @permission_required('demo.uploadfile', login_url='auth/login/')
-
 def fileUploaderView(request):
         if request.method == 'POST':
             form = UploadFileForm(request.POST, request.FILES)
@@ -42,15 +38,15 @@ def detail(request, bn):
     f1 = 0
     f2 = 0
     id = Demo.objects.filter(patientcode=bn)
-    if id[0].status == 'f0':
+    if id[0].status == 'F0':
         p = Demo.objects.filter(f0=id[0].id)
-        f0 = Demo.objects.filter(f0=id[0].id, status='f0').count()
-        f1 = Demo.objects.filter(f0=id[0].id, status='f1').count()
-        f2 = Demo.objects.filter(f0=id[0].id, status='f2').count()
-    elif id[0].status == 'f1':
+        f0 = Demo.objects.filter(f0=id[0].id, status='F0').count()
+        f1 = Demo.objects.filter(f0=id[0].id, status='F1').count()
+        f2 = Demo.objects.filter(f0=id[0].id, status='F2').count()
+    elif id[0].status == 'F1':
         p = Demo.objects.filter(f1=id[0].id)
-        f1 = Demo.objects.filter(f1=id[0].id, status='f1').count()
-        f2 = Demo.objects.filter(f1=id[0].id, status='f2').count()
+        f1 = Demo.objects.filter(f1=id[0].id, status='F1').count()
+        f2 = Demo.objects.filter(f1=id[0].id, status='F2').count()
     else:
         p = Demo.objects.filter(f2=id[0].id)
     return render(request, 'demo/detail.html', {'users': p, 'id': id[0], 'f0': f0, 'f1': f1, 'f2': f2})
@@ -64,10 +60,10 @@ def upload(f):
 
 def index(request):
     users = Demo.objects.order_by('id')[::-1]
-    f0 = Demo.objects.filter(status='f0').count()
-    f1 = Demo.objects.filter(status='f1').count()
-    f2 = Demo.objects.filter(status='f2').count()
-    paginator = Paginator(users, 5)
+    f0 = Demo.objects.filter(status='F0').count()
+    f1 = Demo.objects.filter(status='F1').count()
+    f2 = Demo.objects.filter(status='F2').count()
+    paginator = Paginator(users, 10)
     pageNumber = request.GET.get('page')
     try:
         users = paginator.page(pageNumber)
@@ -80,7 +76,7 @@ def index(request):
 
 def view(request, f):
     users = Demo.objects.filter(status=f)
-    paginator = Paginator(users, 5)
+    paginator = Paginator(users, 10)
     pageNumber = request.GET.get('page')
     try:
         users = paginator.page(pageNumber)
@@ -90,12 +86,9 @@ def view(request, f):
         users = paginator.page(paginator.num_pages)
     return render(request, 'demo/test.html', {'users': users})
 
-
 def savedb(request, filename):
     import xlrd
-    from django.shortcuts import get_object_or_404
     file_extension = os.path.splitext(filename)
-    print(filename)
     if file_extension[1] == '.xlsx':
         xlsx_file = Path('uploads', filename)
         wb_obj = openpyxl.load_workbook(xlsx_file)
@@ -128,7 +121,7 @@ def savedb(request, filename):
 
         cell = Demo(patientcode=row[0].value,
                     name=row[1].value,
-                    status=row[2].value,
+                    status=row[2].value.upper(),
                     f0_id=ff0,
                     f1_id=ff1,
                     f2_id=ff2,
@@ -136,4 +129,19 @@ def savedb(request, filename):
                     address=row[7].value,
                     )
         cell.save()
+    return HttpResponseRedirect(reverse('demo:index'))
+
+
+@permission_required('demo.updateStatus', raise_exception=True)
+def updateStatus(request, id):
+    f1 = Demo.objects.filter(f1=id)
+    for f11 in f1:
+        p = Demo.objects.get(pk=f11.id)
+        p.status = "F1"
+        p.f1_id = 0
+        p.f0_id = id
+        p.save()
+    users = Demo.objects.get(pk=id)
+    users.status = "F0"
+    users.save()
     return HttpResponseRedirect(reverse('demo:index'))

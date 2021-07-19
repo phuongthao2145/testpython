@@ -1,88 +1,127 @@
 <!DOCTYPE html>
 <html lang="en-us">
 <head>
+    {% load static %}
     <title>{% block title %}Luckbunny{% endblock %}</title>
-    <link rel="stylesheet" type="text/css" href="/static/admin/css/base.css">
-    <link rel="stylesheet" type="text/css" href="/static/admin/css/nav_sidebar.css">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
-    <script src="/static/admin/js/nav_sidebar.js" defer></script>
-    <link rel="stylesheet" type="text/css" href="/static/admin/css/changelists.css">
-    <script src="/admin/jsi18n/"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-    <script src="/static/admin/js/jquery.init.js"></script>
-    <script src="/static/admin/js/core.js"></script>
-    <script src="/static/admin/js/admin/RelatedObjectLookups.js"></script>
-    <script src="/static/admin/js/actions.js"></script>
-    <script src="/static/admin/js/urlify.js"></script>
-    <script src="/static/admin/js/prepopulate.js"></script>
-    <script src="/static/admin/js/vendor/xregexp/xregexp.js"></script>
+    <link rel="stylesheet" href="{% static 'demo/styles.css'%}">
     <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1.0, maximum-scale=1.0">
     <link rel="stylesheet" type="text/css" href="/static/admin/css/responsive.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.8.0/css/all.min.css">
     <meta name="robots" content="NONE,NOARCHIVE">
 </head>
-<body class=" app-demo model-demo change-list"
-      data-admin-utc-offset="0">
+<body>
 <!-- Container -->
-<div id="container">
-    <!-- Header -->
-    <div id="header">
-        <div id="branding">
-            <h1 id="site-name"><a href="">Lucybunny site</a></h1>
-        </div>
-        <div id="user-tools">
-            {% if user.is_authenticated %}
-             Welcome,
+<header class="py-2">
+    <div class="container-fluid px-5">
+        <div class="row gx-5">
+            <div id="branding" class="col align-self-start">
+                <h1 id="site-name"><a href="">Lucybunny site</a></h1>
+            </div>
+            <div id="user-tools" class="col align-self-end offset-md-4 text-end">
+                {% if user.is_authenticated %}
+                Welcome,
                 <strong>{{ user.username }}</strong>.
                 <a href="{% url 'demo:logout' %}">Log out</a>
-            {% endif %}
-        </div>
-    </div>
-    <!-- END Header -->
-    <div class="breadcrumbs">
-         {% block menu %}
-            <a href="{% url 'demo:uploadfile' %}">Import file</a> |
-            <a href="{% url 'demo:index' %}">Home</a> |
-            <a href="{% url 'demo:view' 'f0' %}">F0</a> |
-            <a href="{% url 'demo:view' 'f1' %}">F1</a> |
-            <a href="{% url 'demo:view' 'f2' %}">F2</a> |
-            {% endblock %}
-    </div>
-    <div class="main container-fluid" id="main">
-        <div class="content">
-            <!-- Content -->
-            <div id="content" class="flex row">
-                <div id="content-main">
-                    <div class="module" id="changelist">
-                        <div class="changelist-form-container">
-                            <div id="toolbar">
-                                <form id="changelist-search" method="get" action="{% url 'demo:search' %}">
-                                    <div><!-- DIV needed for valid HTML -->
-                                        <label for="searchbar"><img src="/static/admin/img/search.svg"
-                                                                    alt="Search"></label>
-                                        <input type="text" size="40" name="q" value="" id="searchbar" autofocus>
-                                        <input type="submit" value="Search">
-                                    </div>
-                                </form>
-                            </div>
-                            </form>
-                        </div>
-
-                    </div>
-                </div>
-                <br class="clear">
-                <div class="results col-7">
-                            {% block content %}{% endblock %}
-                </div>
-                <div id="chart" class="col-5">
-                     {% block chart %}{% endblock %}
-                </div>
+                {% endif %}
             </div>
-            <!-- END Content -->
-            <div id="footer"></div>
         </div>
-    </div>
 
+    </div>
+</header>
+<div class="breadcrumbs">
+    <div class="container-fluid px-5">
+        {% block menu %}
+        <a href="{% url 'demo:uploadfile' %}">Import file</a> |
+        <a href="{% url 'demo:index' %}">Home</a> |
+        <a href="{% url 'demo:view' 'F0' %}">F0</a> |
+        <a href="{% url 'demo:view' 'F1' %}">F1</a> |
+        <a href="{% url 'demo:view' 'F2' %}">F2</a> |
+        {% endblock %}
+    </div>
 </div>
+<div class="content">
+    <div class="main container-fluid px-5" id="main">
+        <!-- Content -->
+        <div id="search" class="col-md-5 col-12">
+            <form id="changelist-search" method="get" action="{% url 'demo:search' %}">
+                <div class="input-group">
+                    <input type="search" class="form-control rounded" placeholder="Search" aria-label="Search"
+                           aria-describedby="search-addon" name="q"/>
+                    <button type="button" class="btn btn-outline-primary">search</button>
+                </div>
+            </form>
+        </div>
+        <div id="content" class="row">
+            <div class="results col-md-7 col-12">
+                {% block content %}{% endblock %}
+            </div>
+            <div id="chartarea" class="col-md-5 col-12">
+                {% block chart %}{% endblock %}
+            </div>
+        </div>
+        <!-- END Content -->
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+<script type="text/javascript">
+
+//Load google charts
+ google.charts.load('current', {'packages':['corechart', 'bar']});
+ google.charts.setOnLoadCallback(drawChart);
+
+// Draw the chart and set the chart values
+function drawChart() {
+    const pie = document.querySelector("#pie");
+    const bar = document.querySelector("#bar");
+    let chart = document.querySelector('#chart');
+ var data = google.visualization.arrayToDataTable([
+  ['F', '',{ role: 'style' }],
+  ['F0', {{ f0 }},'color: #76A7FA'],
+  ['F1', {{ f1 }},'stroke-color: #703593; stroke-width: 4; fill-color: #C5A5CF'],
+  ['F2', {{ f2 }},'stroke-color: #871B47; stroke-opacity: 0.6; stroke-width: 8; fill-color: #BC5679; fill-opacity: 0.2'],
+]);
+
+  // Optional; add a title and set the width and height of the chart
+  var options = {
+        'title':'Biểu đồ lây nhiễm của {{ id.status|upper }} {{id.name }}'
+   };
+
+  //Display the chart inside the <div> element with id="piechart"
+
+
+    function drawPieChart() {
+          var piechart = new google.visualization.PieChart(chart);
+          piechart.draw(data, options);
+          pie.style.color = 'white';
+          bar.style.color = '#c4dce8';
+          bar.onclick = drawBarChart;
+     }
+     function drawBarChart() {
+          var barchart = new google.visualization.ColumnChart(chart);
+          barchart.draw(data, options);
+          bar.style.color = 'white';
+          pie.style.color = '#c4dce8';
+          pie.onclick = drawPieChart;
+     }
+     window.onresize = doALoadOfStuff;
+    drawPieChart()
+    function doALoadOfStuff() {
+        drawPieChart();
+        drawBarChart()
+    }
+
+  }
+var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+  return new bootstrap.Tooltip(tooltipTriggerEl)
+})
+</script>
+<footer>
+    @copyright2021 - thao@tdc.edu.vn
+</footer>
 <!-- END Container -->
 </body>
 </html>
