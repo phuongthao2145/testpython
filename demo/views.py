@@ -10,8 +10,10 @@ from demo.models import *
 import django
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.contrib.auth.decorators import permission_required
+from slugify import slugify
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "mysite.settings")
 django.setup()
+from datetime import datetime, timedelta
 
 @permission_required('demo.uploadfile', login_url='auth/login/')
 def fileUploaderView(request):
@@ -26,7 +28,6 @@ def fileUploaderView(request):
         return render(request, 'demo/index.html', {'form': form})
 
 
-
 def search(request):
 
     p = Demo.objects.filter(patientcode__contains=request.GET['q'])
@@ -34,22 +35,10 @@ def search(request):
 
 
 def detail(request, bn):
-    f0 = 0
-    f1 = 0
-    f2 = 0
-    id = Demo.objects.filter(patientcode=bn)
-    if id[0].status == 'F0':
-        p = Demo.objects.filter(f0=id[0].id)
-        f0 = Demo.objects.filter(f0=id[0].id, status='F0').count()
-        f1 = Demo.objects.filter(f0=id[0].id, status='F1').count()
-        f2 = Demo.objects.filter(f0=id[0].id, status='F2').count()
-    elif id[0].status == 'F1':
-        p = Demo.objects.filter(f1=id[0].id)
-        f1 = Demo.objects.filter(f1=id[0].id, status='F1').count()
-        f2 = Demo.objects.filter(f1=id[0].id, status='F2').count()
-    else:
-        p = Demo.objects.filter(f2=id[0].id)
-    return render(request, 'demo/detail.html', {'users': p, 'id': id[0], 'f0': f0, 'f1': f1, 'f2': f2})
+    users = Demo.objects.filter(patientcode=bn).first()
+    fc = Demo.objects.filter(id=users.f_status_id).first()
+    f = Demo.objects.filter(f_status=users.id).exclude(test_result=5)
+    return render(request, 'demo/detail.html', {'id': users, 'users': f, 'fc': fc})
 
 
 def upload(f):
@@ -59,32 +48,49 @@ def upload(f):
 
 
 def index(request):
-    users = Demo.objects.order_by('id')[::-1]
-    f0 = Demo.objects.filter(status='F0').count()
-    f1 = Demo.objects.filter(status='F1').count()
-    f2 = Demo.objects.filter(status='F2').count()
-    paginator = Paginator(users, 10)
-    pageNumber = request.GET.get('page')
-    try:
-        users = paginator.page(pageNumber)
-    except PageNotAnInteger:
-        users = paginator.page(1)
-    except EmptyPage:
-        users = paginator.page(paginator.num_pages)
-    return render(request, 'demo/test.html', {'users': users, 'f0': f0, 'f1': f1, 'f2': f2})
+    users = Demo.objects.exclude(test_result=5)
+    p = ''
+    return render(request, 'demo/test.html', {'users': users, 'p': p})
 
 
 def view(request, f):
-    users = Demo.objects.filter(status=f)
-    paginator = Paginator(users, 10)
-    pageNumber = request.GET.get('page')
-    try:
-        users = paginator.page(pageNumber)
-    except PageNotAnInteger:
-        users = paginator.page(1)
-    except EmptyPage:
-        users = paginator.page(paginator.num_pages)
-    return render(request, 'demo/test.html', {'users': users})
+    if f[0] == "f" or f[0] == "F":
+        test = Status.objects.filter(tag=f).first()
+        users = Demo.objects.filter(status=test.id).exclude(test_result=5)
+        p = ''
+    elif f[0] == 'L':
+        test = TestResult.objects.filter(tag=f).first()
+        users = Demo.objects.filter(test_result=test.id)
+        p = ''
+    elif f[0] == 't':
+        test = City.objects.filter(slug=f).first()
+        users = Demo.objects.filter(city=test.id).order_by('status')
+        p = ''
+    elif f[0] == 'q':
+        test = District.objects.filter(slug=f).first()
+        users = Demo.objects.filter(district=test.id).order_by('status')
+        p = {'f0': Demo.objects.filter(district=test.id, status=1).exclude(test_result=5),
+             'f1': Demo.objects.filter(district=test.id, status=2).exclude(test_result=5),
+             'f2': Demo.objects.filter(district=test.id, status=3).exclude(test_result=5),
+             'f3': Demo.objects.filter(district=test.id, status=4).exclude(test_result=5),
+             'isolate': Demo.objects.filter(district=test.id, isolation_area=test.id),
+             'title': test.disname
+             }
+    elif f[0] == 'x':
+        test = Province.objects.filter(slug=f).first()
+        users = Demo.objects.filter(province=test.id).order_by('status')
+        p = {'f0':Demo.objects.filter(province=test.id, status=1).exclude(test_result=5),
+             'f1':Demo.objects.filter(province=test.id, status=2).exclude(test_result=5),
+             'f2': Demo.objects.filter(province=test.id, status=3).exclude(test_result=5),
+             'f3': Demo.objects.filter(province=test.id, status=4).exclude(test_result=5),
+             'isolate': Demo.objects.filter(province=test.id, isolation_area=test.id),
+             'title': test.proname
+            }
+    else:
+        test = TestResult.objects.filter(tag=f).first()
+        users = Demo.objects.filter(test_result=test.id).order_by('status')
+        p = ''
+    return render(request, 'demo/test.html', {'users': users, 'p': p})
 
 def savedb(request, filename):
     import xlrd
@@ -100,48 +106,94 @@ def savedb(request, filename):
         sheet = wb.sheet_by_index(0)
     else:
         return HttpResponse("<h2>File not supported!</h2>" + file_extension[1])
-    for row in sheet:
-        if not row[3].value:
-            ff0 = 0
-        else:
-            ff00 = Demo.objects.filter(patientcode=row[3].value)
-            ff0 = ff00[0].id
+    for col in sheet:
+        #col0:patientcode,#col1:name,#col2:status,#col3:f_status,#col4:phone,
+        # #col5:addr,#col6:province,#col7:test_result,#col8:isolation_area
+        #check if foreinkey is not exist
+        #status
+        if not Status.objects.filter(sname=col[2].value):
+            #return HttpResponse("<h2>Vui lòng thêm giá trị: "+ col[2].value+" vào bảng status!</h2>")
+            status = Status(sname=col[2].value.upper(), tag=slugify(col[2].value))
+            status.save()
+        #province
+        if not Province.objects.filter(slug=slugify(col[6].value)):
+            return HttpResponse("<h2>Vui lòng thêm giá trị: " + col[6].value+" vào bảng province!</h2>")
 
-        if not row[4].value:
-            ff1 = 0
+        #check if isolation_area is empty
+        if not col[8].value:
+            isolation_area = ''
         else:
-            ff00 = Demo.objects.filter(patientcode=row[4].value)
-            ff1 = ff00[0].id
-
-        if not row[5].value:
-            ff2 = 0
+            isolation_area = Province.objects.filter(slug=slugify(col[8].value)).first().id
+        #check if f_status col is empty
+        if not col[3].value:
+            f_status = ''
         else:
-            ff00 = Demo.objects.filter(patientcode=row[5].value)
-            ff2 = ff00[0].id
+            f_status = Demo.objects.filter(patientcode=col[3].value).first().id
+        #check if result col is empty
+        if not col[7].value:
+            result_id = ''
+        # test_result
+        elif not TestResult.objects.filter(slug=slugify(col[7].value)):
+            return HttpResponse("<h2>Vui lòng thêm giá trị: " + col[7].value + " vào bảng test_result!</h2>")
+        else:
+            result_id = TestResult.objects.filter(testname=col[7].value)[0].id
 
-        cell = Demo(patientcode=row[0].value,
-                    name=row[1].value,
-                    status=row[2].value.upper(),
-                    f0_id=ff0,
-                    f1_id=ff1,
-                    f2_id=ff2,
-                    phone=row[6].value,
-                    address=row[7].value,
+        #import demo to DB
+        demo = Demo(patientcode=col[0].value,
+                    name=col[1].value,
+                    status_id=Status.objects.filter(sname=col[2].value)[0].id,
+                    f_status_id=f_status,
+                    phone=col[4].value,
+                    address=col[5].value,
+                    province_id=Province.objects.filter(slug=slugify(col[6].value))[0].id,
+                    created_at=datetime.today(),
+                    expiration=datetime.today() + timedelta(21),
+                    test_result_id=result_id,
+                    isolation_area_id=isolation_area,
                     )
-        cell.save()
+        if demo.save():
+            os.remove("uploads/" + filename)
+    return HttpResponseRedirect(reverse('demo:index'))
+
+
+@permission_required('demo.updateStatusF0', raise_exception=True)
+def updateStatusF0(request, id):
+    f1 = Demo.objects.filter(f_status=id)
+    for f2s in f1:
+        f2 = Demo.objects.filter(f_status=f2s.id)
+        for f3 in f2:
+            p = Demo.objects.get(pk=f3.id)
+            p.status = "F2"
+            p.f_status_id = f2s.id
+            p.save()
+
+        p = Demo.objects.get(pk=f2s.id)
+        p.status = "F1"
+        p.f_status_id = id
+        p.save()
+
+
+    users = Demo.objects.get(pk=id)
+    users.status = "F0"
+    users.save()
     return HttpResponseRedirect(reverse('demo:index'))
 
 
 @permission_required('demo.updateStatus', raise_exception=True)
 def updateStatus(request, id):
-    f1 = Demo.objects.filter(f1=id)
-    for f11 in f1:
-        p = Demo.objects.get(pk=f11.id)
-        p.status = "F1"
-        p.f1_id = 0
-        p.f0_id = id
+    f1 = Demo.objects.filter(f_status=id)
+    for f2s in f1:
+        f2 = Demo.objects.filter(f_status=f2s.id)
+        for f3 in f2:
+            p = Demo.objects.get(pk=f3.id)
+            p.testname = 5
+            p.save()
+
+        p = Demo.objects.get(pk=f2s.id)
+        p.test_result_id = 5
         p.save()
+
     users = Demo.objects.get(pk=id)
-    users.status = "F0"
+    users.test_result_id = 5
     users.save()
     return HttpResponseRedirect(reverse('demo:index'))

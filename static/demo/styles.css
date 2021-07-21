@@ -55,12 +55,15 @@ color: rgb(196, 220, 232);
 .update:link{
 text-decoration:none !important;
 padding:5px;
-color: #78afc8 !important;
 white-space: nowrap;
 }
-.update:visited{
-color:  #78afc8 !important;
+.results table a{
+color: #417790 !important;
+text-decoration:none !important
 }
-.update:hover{
-color: #417690 !important;
+#link-danger {
+    color: #dc3545 !important;
+}
+#link-success {
+    color: #198754 !important;
 }

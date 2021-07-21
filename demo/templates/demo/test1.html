@@ -18,14 +18,14 @@
     </tr>
     </thead>
     <tbody>
-    {% for row in f1 %}
+    {% for row in users %}
     <tr>
         <td class="field-id">{{ row.id }}</td>
         <td class="field-patientcode">
             <a href="{% url 'demo:detail' row.patientcode %}">{{ row.patientcode }}</a>
         </td>
         <td class="field-name">{{ row.name }}</td>
-        <td class="field-status">{{ row.status }}</td>
+        <td class="field-status"><a href="{% url 'demo:view' row.status.tag %}">{{ row.status }}</a></td>
         <td class="field-f0">
             {% if row.f0 %}
             {{ row.f0.name }}
@@ -43,6 +43,9 @@
         </td>
         <td class="field-phone">{{ row.phone }}</td>
         <td class="field-address">{{ row.address }}</td>
+        <td class="field-phone"><a href="{% url 'demo:view' row.province.slug %}">{{ row.province.proname }}</a></td>
+        <td class="field-address"><a href="{% url 'demo:view' row.district.slug %}">{{ row.district.slug }}</a></td>
+        <td class="field-address"><a href="{% url 'demo:view' row.status.tag %}">{{ row.city.cityname }}</a></td>
     </tr>
     {% endfor %}
     </tbody>
