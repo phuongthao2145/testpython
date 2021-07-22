@@ -6,7 +6,6 @@ class LoginForm(forms.Form):
     password = forms.CharField(widget=forms.PasswordInput)
 
 class UploadFileForm(forms.Form):
-    #title = forms.CharField(max_length=50)
-    file = forms.FileField()
+    file = forms.FileField(widget=forms.FileInput(attrs={'class': 'form-control', 'id': "inputGroupFile02"}),label="")
 
 

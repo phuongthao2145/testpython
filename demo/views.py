@@ -11,25 +11,26 @@ import django
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.contrib.auth.decorators import permission_required
 from slugify import slugify
+from datetime import datetime, timedelta
+
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "mysite.settings")
 django.setup()
-from datetime import datetime, timedelta
+
 
 @permission_required('demo.uploadfile', login_url='auth/login/')
 def fileUploaderView(request):
-        if request.method == 'POST':
-            form = UploadFileForm(request.POST, request.FILES)
-            if form.is_valid():
-                upload(request.FILES['file'])
-                return HttpResponseRedirect('savedb/' + request.FILES['file'].name)
-            else:
-                return HttpResponse("<h2>File uploaded not successful!</h2>")
-        form = UploadFileForm()
-        return render(request, 'demo/index.html', {'form': form})
+    if request.method == 'POST':
+        form = UploadFileForm(request.POST, request.FILES)
+        if form.is_valid():
+            upload(request.FILES['file'])
+            return HttpResponseRedirect('savedb/' + request.FILES['file'].name)
+        else:
+            return HttpResponse("<h2>File uploaded not successful!</h2>")
+    form = UploadFileForm()
+    return render(request, 'demo/index.html', {'form': form})
 
 
 def search(request):
-
     p = Demo.objects.filter(patientcode__contains=request.GET['q'])
     return render(request, 'demo/test.html', {'users': p})
 
@@ -48,13 +49,79 @@ def upload(f):
 
 
 def index(request):
-    users = Demo.objects.exclude(test_result=5)
+    users = Demo.objects.exclude(test_result=5).order_by('id')[::-1]
     p = ''
     return render(request, 'demo/test.html', {'users': users, 'p': p})
 
 
 def view(request, f):
-    if f[0] == "f" or f[0] == "F":
+    if City.objects.filter(slug=f):
+        test = City.objects.filter(slug=f).first()
+        users = Demo.objects.filter(province=test.id).order_by('status')
+        d1 = Demo.objects.filter(city=test.id, status=1)
+        newf0 = 0
+        for d in d1:
+            if d.created_at.date() == datetime.today().date():
+                newf0 += 1
+        p = {'f0': Demo.objects.filter(city=test.id, status=1).exclude(test_result=5),
+             'f1': Demo.objects.filter(city=test.id, status=2).exclude(test_result=5),
+             'f2': Demo.objects.filter(city=test.id, status=3).exclude(test_result=5),
+             'f3': Demo.objects.filter(city=test.id, status=4).exclude(test_result=5),
+             'isolate': Demo.objects.filter(city=test.id, isolation_area=test.id),
+             'isolatef1': Demo.objects.filter(city=test.id, isolation_area=test.id, status=2),
+             'isolatef2': Demo.objects.filter(city=test.id, isolation_area=test.id, status=3),
+             'title': test.cityname,
+             'newf0': newf0,
+             }
+    elif District.objects.filter(slug=f):
+        # get district
+        district = District.objects.filter(slug=f).first()
+        #get all province
+        provinces = Province.objects.filter(district=district.id)
+
+        p = list()
+        for test in provinces:
+            #users = Demo.objects.filter(province=test.id)
+            d1 = Demo.objects.filter(province=test.id, status=1)
+            newf0 = 0
+            for d in d1:
+                if d.created_at.date() == datetime.today().date():
+                    newf0 += 1
+
+            p.append({'f0': Demo.objects.filter(province=test.id, status=1).exclude(test_result=5),
+                 'f1': Demo.objects.filter(province=test.id, status=2).exclude(test_result=5),
+                 'f2': Demo.objects.filter(province=test.id, status=3).exclude(test_result=5),
+                 'f3': Demo.objects.filter(province=test.id, status=4).exclude(test_result=5),
+                 'isolate': Demo.objects.filter(province=test.id, isolation_area=test.id),
+                 'isolatef1': Demo.objects.filter(province=test.id, isolation_area=test.id, status=2),
+                 'isolatef2': Demo.objects.filter(province=test.id, isolation_area=test.id, status=3),
+                 'newf0': newf0,
+                 'title': test.proname,
+                    'id': test.id,
+                 })
+        return render(request, 'demo/district.html', {'users': provinces, 'p': p})
+
+    elif Province.objects.filter(slug=f):
+        test = Province.objects.filter(slug=f).first()
+        users = Demo.objects.filter(province=test.id).order_by('status')
+        d1 = Demo.objects.filter(province=test.id, status=1)
+        newf0 = 0
+        for d in d1:
+            if d.created_at.date() == datetime.today().date():
+                newf0 += 1
+
+        p = {'f0': Demo.objects.filter(province=test.id, status=1).exclude(test_result=5),
+                 'f1': Demo.objects.filter(province=test.id, status=2).exclude(test_result=5),
+                 'f2': Demo.objects.filter(province=test.id, status=3).exclude(test_result=5),
+                 'f3': Demo.objects.filter(province=test.id, status=4).exclude(test_result=5),
+                 'isolate': Demo.objects.filter(province=test.id, isolation_area=test.id),
+                 'isolatef1': Demo.objects.filter(province=test.id, isolation_area=test.id, status=2),
+                 'isolatef2': Demo.objects.filter(province=test.id, isolation_area=test.id, status=3),
+                 'newf0': newf0,
+                 'title': test.proname
+                 }
+
+    elif f[0] == "f" or f[0] == "F":
         test = Status.objects.filter(tag=f).first()
         users = Demo.objects.filter(status=test.id).exclude(test_result=5)
         p = ''
@@ -62,35 +129,13 @@ def view(request, f):
         test = TestResult.objects.filter(tag=f).first()
         users = Demo.objects.filter(test_result=test.id)
         p = ''
-    elif f[0] == 't':
-        test = City.objects.filter(slug=f).first()
-        users = Demo.objects.filter(city=test.id).order_by('status')
-        p = ''
-    elif f[0] == 'q':
-        test = District.objects.filter(slug=f).first()
-        users = Demo.objects.filter(district=test.id).order_by('status')
-        p = {'f0': Demo.objects.filter(district=test.id, status=1).exclude(test_result=5),
-             'f1': Demo.objects.filter(district=test.id, status=2).exclude(test_result=5),
-             'f2': Demo.objects.filter(district=test.id, status=3).exclude(test_result=5),
-             'f3': Demo.objects.filter(district=test.id, status=4).exclude(test_result=5),
-             'isolate': Demo.objects.filter(district=test.id, isolation_area=test.id),
-             'title': test.disname
-             }
-    elif f[0] == 'x':
-        test = Province.objects.filter(slug=f).first()
-        users = Demo.objects.filter(province=test.id).order_by('status')
-        p = {'f0':Demo.objects.filter(province=test.id, status=1).exclude(test_result=5),
-             'f1':Demo.objects.filter(province=test.id, status=2).exclude(test_result=5),
-             'f2': Demo.objects.filter(province=test.id, status=3).exclude(test_result=5),
-             'f3': Demo.objects.filter(province=test.id, status=4).exclude(test_result=5),
-             'isolate': Demo.objects.filter(province=test.id, isolation_area=test.id),
-             'title': test.proname
-            }
+
     else:
         test = TestResult.objects.filter(tag=f).first()
         users = Demo.objects.filter(test_result=test.id).order_by('status')
         p = ''
     return render(request, 'demo/test.html', {'users': users, 'p': p})
+
 
 def savedb(request, filename):
     import xlrd
@@ -107,29 +152,29 @@ def savedb(request, filename):
     else:
         return HttpResponse("<h2>File not supported!</h2>" + file_extension[1])
     for col in sheet:
-        #col0:patientcode,#col1:name,#col2:status,#col3:f_status,#col4:phone,
+        # col0:patientcode,#col1:name,#col2:status,#col3:f_status,#col4:phone,
         # #col5:addr,#col6:province,#col7:test_result,#col8:isolation_area
-        #check if foreinkey is not exist
-        #status
+        # check if foreinkey is not exist
+        # status
         if not Status.objects.filter(sname=col[2].value):
-            #return HttpResponse("<h2>Vui lòng thêm giá trị: "+ col[2].value+" vào bảng status!</h2>")
+            # return HttpResponse("<h2>Vui lòng thêm giá trị: "+ col[2].value+" vào bảng status!</h2>")
             status = Status(sname=col[2].value.upper(), tag=slugify(col[2].value))
             status.save()
-        #province
+        # province
         if not Province.objects.filter(slug=slugify(col[6].value)):
-            return HttpResponse("<h2>Vui lòng thêm giá trị: " + col[6].value+" vào bảng province!</h2>")
+            return HttpResponse("<h2>Vui lòng thêm giá trị: " + col[6].value + " vào bảng province!</h2>")
 
-        #check if isolation_area is empty
+        # check if isolation_area is empty
         if not col[8].value:
             isolation_area = ''
         else:
             isolation_area = Province.objects.filter(slug=slugify(col[8].value)).first().id
-        #check if f_status col is empty
+        # check if f_status col is empty
         if not col[3].value:
             f_status = ''
         else:
             f_status = Demo.objects.filter(patientcode=col[3].value).first().id
-        #check if result col is empty
+        # check if result col is empty
         if not col[7].value:
             result_id = ''
         # test_result
@@ -138,7 +183,7 @@ def savedb(request, filename):
         else:
             result_id = TestResult.objects.filter(testname=col[7].value)[0].id
 
-        #import demo to DB
+        # import demo to DB
         demo = Demo(patientcode=col[0].value,
                     name=col[1].value,
                     status_id=Status.objects.filter(sname=col[2].value)[0].id,
@@ -151,8 +196,8 @@ def savedb(request, filename):
                     test_result_id=result_id,
                     isolation_area_id=isolation_area,
                     )
-        if demo.save():
-            os.remove("uploads/" + filename)
+        demo.save()
+    os.remove("uploads/" + filename)
     return HttpResponseRedirect(reverse('demo:index'))
 
 
@@ -171,7 +216,6 @@ def updateStatusF0(request, id):
         p.status = "F1"
         p.f_status_id = id
         p.save()
-
 
     users = Demo.objects.get(pk=id)
     users.status = "F0"
