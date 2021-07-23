@@ -13,6 +13,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.8.0/css/all.min.css">
     <meta name="robots" content="NONE,NOARCHIVE">
     <script type="text/javascript" src="{% static 'demo/sort-table.js'%}"></script>
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
 </head>
 <body>
 <!-- Container -->
@@ -56,13 +58,13 @@
           <a class="nav-link" href="{% url 'demo:view' 'f0' %}">F2</a>
         </li>
       </ul>
-      <form id="changelist-search" method="get" action="{% url 'demo:search' %}">
+      <!--<form id="changelist-search" method="get" action="{% url 'demo:search' %}">
                 <div class="input-group">
                     <input type="search" class="form-control rounded" placeholder="Search" aria-label="Search"
                            aria-describedby="search-addon" name="q"/>
                     <button type="button" class="btn btn-primary">search</button>
                 </div>
-            </form>
+            </form> -->
     </div>
   </div>
 </nav>
@@ -88,5 +90,15 @@
 </footer>
 <!-- END Container -->
 
+<script>
+    $(document).ready(function(){
+  $("#myInput").on("keyup", function() {
+    var value = $(this).val().toLowerCase();
+    $("#myTable tr").filter(function() {
+      $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+    });
+  });
+});
+</script>
 </body>
 </html>

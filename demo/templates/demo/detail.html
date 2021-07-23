@@ -158,6 +158,8 @@
 <h4 class="pt-3 pb-2">
    Có {{ users|length}} ca F con (đã trừ các trường hợp hết cách ly)
 </h4>
+<input class="form-control" id="myInput" type="text" placeholder="Tìm..">
+
 <div style="overflow-x:auto;overflow-y:auto; height:500px">
     <table class="table table-striped table-hover js-sort-table table-responsive">
     <thead class="sticky-top bg-light">
@@ -176,7 +178,7 @@
         <th scope="col">Kết quả</th>
     </tr>
     </thead>
-    <tbody>
+    <tbody id="myTable">
 
     {% for row in users %}
     <tr>
@@ -193,29 +195,29 @@
         </td>
         <td class="field-phone">{{ row.phone }}</td>
         <td class="field-address">{{ row.address }}</td>
-         <td class="field-phone">
+         <td class="field-province">
             {% if row.province %}
-            <a href="{% url 'demo:view' row.province.slug %}">{{ row.province.proname }}</a>
+            <a href="{% url 'demo:province' row.province.slug %}">{{ row.province.proname }}</a>
             {% else %}
             -
             {% endif %}
         </td>
-        <td class="field-address">
+        <td class="field-district">
             {% if row.province %}
-            <a href="{% url 'demo:view' row.province.district.slug %}">{{ row.province.district.disname }}</a>
+            <a href="{% url 'demo:district' row.province.district.slug %}">{{ row.province.district.disname }}</a>
             {% else %}
             -
             {% endif %}
         </td>
-        <td class="field-address">
+        <td class="field-city">
             {% if row.province %}
-            <a href="{% url 'demo:view' row.province.district.city.slug %}">{{ row.province.district.city.cityname }}</a>
+            <a href="{% url 'demo:city' row.province.district.city.slug %}">{{ row.province.district.city.cityname }}</a>
             {% else %}
             -
             {% endif %}
         </td>
-        <td class="field-address">{{ row.created_at }}</td>
-        <td class="field-address">
+        <td class="field-created-at">{{ row.created_at }}</td>
+        <td class="field-test-result">
             {% if row.test_result %}
             <a href="{% url 'demo:view' row.test_result.tag %}">{{ row.test_result }}</a>
             {% else %}

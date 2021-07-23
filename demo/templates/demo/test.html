@@ -28,6 +28,7 @@
     <h4>Thông tin chi tiết về các ca mắc tại {{data.title}}</h4>
 </div>
 {% endif %}
+<input class="form-control" id="myInput" type="text" placeholder="Tìm..">
 <div style="overflow-x:auto; overflow-y:auto; max-height:500px">
     <table class="table table-striped table-hover js-sort-table table-responsive">
     <thead class="sticky-top bg-light">
@@ -47,7 +48,7 @@
         <th scope="col">Khu cách ly</th>
     </tr>
     </thead>
-    <tbody>
+    <tbody id="myTable">
     {% for row in users %}
     <tr>
         <td class="field-id">{{ row.id }}</td>
