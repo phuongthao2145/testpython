@@ -38,21 +38,21 @@
         <td class="field-address">{{ id.address }}</td>
          <td class="field-phone">
             {% if id.province %}
-            <a href="{% url 'demo:view' id.province.slug %}">{{ id.province.proname }}</a>
+            <a href="{% url 'demo:province' id.province.slug %}">{{ id.province.proname }}</a>
             {% else %}
             -
             {% endif %}
         </td>
         <td class="field-address">
             {% if id.province %}
-            <a href="{% url 'demo:view' id.province.district.slug %}">{{ id.province.district.disname }}</a>
+            <a href="{% url 'demo:district' id.province.district.slug %}">{{ id.province.district.disname }}</a>
             {% else %}
             -
             {% endif %}
         </td>
         <td class="field-address">
             {% if id.province %}
-            <a href="{% url 'demo:view' id.province.district.city.slug %}">{{ id.province.district.city.cityname }}</a>
+            <a href="{% url 'demo:city' id.province.district.city.slug %}">{{ id.province.district.city.cityname }}</a>
             {% else %}
             -
             {% endif %}
@@ -227,19 +227,5 @@
     </tbody>
 </table>
 </div>
-<p class="paginator">
-     <span class="step-links">
-        {% if users.has_previous %}
-            <a href="?page={{ users.previous_page_number }}">Previous</a>
-        {% endif %}
-    </span>
-    <span class="current">
-        Page {{ users.number }} of {{ users.paginator.num_pages }}.
-    </span>
-    <span>
-        {% if users.has_next %}
-            <a href="?page={{ users.next_page_number }}">Next</a>
-        {% endif %}
-    </span>
-</p>
+
 {% endblock %}

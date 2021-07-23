@@ -17,7 +17,7 @@
 <body>
 <!-- Container -->
 <header class="py-2">
-    <div class="container-fluid px-5">
+    <div class="container-fluid px-md-5">
         <div class="row gx-5">
             <div id="branding" class="col align-self-start">
                 <h1 id="site-name"><a href="">Lucybunny site</a></h1>
@@ -33,30 +33,43 @@
 
     </div>
 </header>
-<div class="breadcrumbs">
-    <div class="container-fluid px-5">
-        {% block menu %}
-        <a href="{% url 'demo:uploadfile' %}">Import file</a> |
-        <a href="{% url 'demo:index' %}">Home</a> |
-        <a href="{% url 'demo:view' 'f0' %}">F0</a> |
-        <a href="{% url 'demo:view' 'f1' %}">F1</a> |
-        <a href="{% url 'demo:view' 'f2' %}">F2</a> |
-        <a href="{% url 'demo:view' 'f3' %}">F3</a> |
-        {% endblock %}
-    </div>
-</div>
-<div class="content">
-    <div class="main container-fluid px-5" id="main">
-        <!-- Content -->
-        <div id="search" class="col-md-5 col-12">
-            <form id="changelist-search" method="get" action="{% url 'demo:search' %}">
+<nav class="navbar navbar-expand-lg navbar-dark my-bg sticky-top">
+  <div class="container-fluid px-md-5">
+    <button class="navbar-toggler ms-auto" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+          <a class="nav-link active" aria-current="page" href="{% url 'demo:index' %}">Home</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'demo:uploadfile' %}">Import file</a>
+        </li>
+          <li class="nav-item">
+          <a class="nav-link" href="{% url 'demo:view' 'f0' %}">F0</a>
+        </li>
+          <li class="nav-item">
+          <a class="nav-link" href="{% url 'demo:view' 'f0' %}">F1</a>
+        </li>
+          <li class="nav-item">
+          <a class="nav-link" href="{% url 'demo:view' 'f0' %}">F2</a>
+        </li>
+      </ul>
+      <form id="changelist-search" method="get" action="{% url 'demo:search' %}">
                 <div class="input-group">
                     <input type="search" class="form-control rounded" placeholder="Search" aria-label="Search"
                            aria-describedby="search-addon" name="q"/>
-                    <button type="button" class="btn btn-outline-primary">search</button>
+                    <button type="button" class="btn btn-primary">search</button>
                 </div>
             </form>
-        </div>
+    </div>
+  </div>
+</nav>
+
+<div class="content">
+    <div class="main container-fluid px-md-5 py-5" id="main">
+        <!-- Content -->
         <div id="content" class="row">
                 {% block form %}{%endblock%}
             <div class="results col-12">
@@ -74,5 +87,6 @@
     @copyright2021 - thao@tdc.edu.vn
 </footer>
 <!-- END Container -->
+
 </body>
 </html>

@@ -12,6 +12,8 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.contrib.auth.decorators import permission_required
 from slugify import slugify
 from datetime import datetime, timedelta
+from django.db.models import Sum, Count
+from django.http import JsonResponse
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "mysite.settings")
 django.setup()
@@ -54,74 +56,80 @@ def index(request):
     return render(request, 'demo/test.html', {'users': users, 'p': p})
 
 
-def view(request, f):
-    if City.objects.filter(slug=f):
-        test = City.objects.filter(slug=f).first()
-        users = Demo.objects.filter(province=test.id).order_by('status')
-        d1 = Demo.objects.filter(city=test.id, status=1)
-        newf0 = 0
-        for d in d1:
-            if d.created_at.date() == datetime.today().date():
-                newf0 += 1
-        p = {'f0': Demo.objects.filter(city=test.id, status=1).exclude(test_result=5),
-             'f1': Demo.objects.filter(city=test.id, status=2).exclude(test_result=5),
-             'f2': Demo.objects.filter(city=test.id, status=3).exclude(test_result=5),
-             'f3': Demo.objects.filter(city=test.id, status=4).exclude(test_result=5),
-             'isolate': Demo.objects.filter(city=test.id, isolation_area=test.id),
-             'isolatef1': Demo.objects.filter(city=test.id, isolation_area=test.id, status=2),
-             'isolatef2': Demo.objects.filter(city=test.id, isolation_area=test.id, status=3),
-             'title': test.cityname,
-             'newf0': newf0,
+def city(request, f):
+    return render(request, 'demo/district.html')
+
+
+def district(request, f):
+    date = datetime.today()
+    # get district
+    district = District.objects.filter(slug=f).first()
+    # get all id province belongs to a district
+    province_ids = Province.objects.filter(district=district.id).values_list('id', flat=True)
+    #get all trong provinces
+    users = Demo.objects.filter(province_id__in=province_ids)
+    if users:
+        total = {'f0':users.filter(status=1).count(),
+             'f1':users.filter(status=2).count(),
+             'f2':users.filter(status=3).count(),
+             'f3':users.filter(status=4).count(),
+             'isolation': users.filter(isolation_area__in=province_ids).count(),
+            'isolationf1': users.filter(isolation_area__in=province_ids,status=2).count(),
+            'isolationf2': users.filter(isolation_area__in=province_ids,status=3).count(),
+            'newf': users.filter(province_id__in=province_ids, created_at__year=date.year, created_at__month=date.month,
+                               created_at__day=date.day).count(),
+            'title': users.first().province
              }
-    elif District.objects.filter(slug=f):
-        # get district
-        district = District.objects.filter(slug=f).first()
-        #get all province
-        provinces = Province.objects.filter(district=district.id)
-
-        p = list()
-        for test in provinces:
-            #users = Demo.objects.filter(province=test.id)
-            d1 = Demo.objects.filter(province=test.id, status=1)
-            newf0 = 0
-            for d in d1:
-                if d.created_at.date() == datetime.today().date():
-                    newf0 += 1
-
-            p.append({'f0': Demo.objects.filter(province=test.id, status=1).exclude(test_result=5),
-                 'f1': Demo.objects.filter(province=test.id, status=2).exclude(test_result=5),
-                 'f2': Demo.objects.filter(province=test.id, status=3).exclude(test_result=5),
-                 'f3': Demo.objects.filter(province=test.id, status=4).exclude(test_result=5),
-                 'isolate': Demo.objects.filter(province=test.id, isolation_area=test.id),
-                 'isolatef1': Demo.objects.filter(province=test.id, isolation_area=test.id, status=2),
-                 'isolatef2': Demo.objects.filter(province=test.id, isolation_area=test.id, status=3),
-                 'newf0': newf0,
-                 'title': test.proname,
-                    'id': test.id,
+    else:
+        total = ''
+    queryset = Province.objects.filter(district=district.id)
+    detail = []
+    for i in queryset:
+        users = Demo.objects.filter(province=i.id)
+        detail.append({'f0':users.filter(status=1).count(),
+             'f1':users.filter(status=2).count(),
+             'f2':users.filter(status=3).count(),
+             'f3':users.filter(status=4).count(),
+             'isolation': users.filter(isolation_area=i.id).count(),
+            'isolationf1': users.filter(isolation_area=i.id,status=2).count(),
+            'isolationf2': users.filter(isolation_area=i.id,status=3).count(),
+            'newf': users.filter(province_id=i.id, created_at__year=date.year, created_at__month=date.month,
+                               created_at__day=date.day).count(),
+            'extra': i,
                  })
-        return render(request, 'demo/district.html', {'users': provinces, 'p': p})
+    # for chart
+    labels = []
+    data = []
+    for entry in queryset:
+        labels.append(entry.proname)
+        d = Demo.objects.filter(created_at__year=date.year, created_at__month=date.month,
+                               created_at__day=date.day, province=entry.id).annotate(Count('created_at'))
+        data.append(d.count())
 
-    elif Province.objects.filter(slug=f):
-        test = Province.objects.filter(slug=f).first()
-        users = Demo.objects.filter(province=test.id).order_by('status')
-        d1 = Demo.objects.filter(province=test.id, status=1)
-        newf0 = 0
-        for d in d1:
-            if d.created_at.date() == datetime.today().date():
-                newf0 += 1
 
-        p = {'f0': Demo.objects.filter(province=test.id, status=1).exclude(test_result=5),
-                 'f1': Demo.objects.filter(province=test.id, status=2).exclude(test_result=5),
-                 'f2': Demo.objects.filter(province=test.id, status=3).exclude(test_result=5),
-                 'f3': Demo.objects.filter(province=test.id, status=4).exclude(test_result=5),
-                 'isolate': Demo.objects.filter(province=test.id, isolation_area=test.id),
-                 'isolatef1': Demo.objects.filter(province=test.id, isolation_area=test.id, status=2),
-                 'isolatef2': Demo.objects.filter(province=test.id, isolation_area=test.id, status=3),
-                 'newf0': newf0,
-                 'title': test.proname
-                 }
+    return render(request, 'demo/district.html', {'total': total, 'detail': detail, 'data': data,'labels':labels})
 
-    elif f[0] == "f" or f[0] == "F":
+
+def province(request, f):
+    test = Province.objects.filter(slug=f).first()
+    date = datetime.today()
+    users = Demo.objects.filter(province=test.id).order_by('status')
+    data = {'f0': Demo.objects.filter(province=test.id, status=1).count(),
+            'f1': Demo.objects.filter(province=test.id, status=2).count(),
+            'f2': Demo.objects.filter(province=test.id, status=3).count(),
+            'f3': Demo.objects.filter(province=test.id, status=4).count(),
+            'isolation': Demo.objects.filter(province=test.id, isolation_area=test.id).count(),
+            'isolationf1': Demo.objects.filter(province=test.id, isolation_area=test.id,status=2).count(),
+            'isolationf2': Demo.objects.filter(province=test.id, isolation_area=test.id,status=3).count(),
+            'newf': Demo.objects.filter(province=test.id, created_at__year=date.year, created_at__month=date.month,
+                               created_at__day=date.day).count(),
+            'title': test.proname
+            }
+    return render(request, 'demo/test.html', {'users': users, 'data': data})
+
+
+def view(request, f):
+    if f[0] == "f" or f[0] == "F":
         test = Status.objects.filter(tag=f).first()
         users = Demo.objects.filter(status=test.id).exclude(test_result=5)
         p = ''

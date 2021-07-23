@@ -24,6 +24,7 @@ class Province(models.Model):
     slug = models.CharField(max_length=200, null=True)
     district = models.ForeignKey('District', on_delete=models.RESTRICT, null=True, blank=True)
     tag = models.CharField(max_length=100, null=True, blank=True)
+
     def __str__(self):
         return self.proname
 

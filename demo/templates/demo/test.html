@@ -2,8 +2,8 @@
 {% block title %}index{% endblock %}
 
 {% block content %}
-{% if p != ''%}
-<h4>Thông tin {{p.title}} (đã trừ các trường hợp hết cách ly)</h4>
+{% if data %}
+<h4>Thông tin {{data.title}} (đã trừ các trường hợp hết cách ly)</h4>
 <div style="overflow-x:auto;">
     <table class="table table-striped table-hover table-responsive">
         <thead>
@@ -12,23 +12,23 @@
             <th>Số Ca F1</th>
             <th>Số Ca F2</th>
             <th>Số Ca F3</th>
-            <th>Số lượng cách ly tại {{p.title}}</th>
+            <th>Số lượng cách ly tại {{data.title}}</th>
             <th>Số lượng ca nhiễm mới ngày {% now "d/m/Y" %}</th>
         </tr>
         </thead>
         <tbody>
         <tr>
-            <td>{{p.f0|length}}</td>
-            <td>{{p.f1|length}}</td>
-            <td>{{p.f2|length}}</td>
-            <td>{{p.f3|length}}</td>
-            <td>{{p.isolate|length}} ( F1: {{p.isolatef1|length}} ca, F2: {{p.isolatef2|length}} ca )</td>
-            <td>{{p.newf0}}</td>
+            <td>{{data.f0}}</td>
+            <td>{{data.f1}}</td>
+            <td>{{data.f2}}</td>
+            <td>{{data.f3}}</td>
+            <td>{{data.isolation}} ( F1: {{data.isolationf1}} ca, F2: {{data.isolationf2}} ca )</td>
+            <td>{{data.newf}}</td>
     </table>
-    <h4>Thông tin chi tiết về các ca mắc tại {{p.title}}</h4>
+    <h4>Thông tin chi tiết về các ca mắc tại {{data.title}}</h4>
 </div>
 {% endif %}
-<div style="overflow-x:auto; overflow-y:auto; height:500px">
+<div style="overflow-x:auto; overflow-y:auto; max-height:500px">
     <table class="table table-striped table-hover js-sort-table table-responsive">
     <thead class="sticky-top bg-light">
     <tr>
@@ -67,21 +67,21 @@
         <td class="field-address">{{ row.address }}</td>
         <td class="field-phone">
             {% if row.province %}
-            <a href="{% url 'demo:view' row.province.slug %}">{{ row.province.proname }}</a>
+            <a href="{% url 'demo:province' row.province.slug %}">{{ row.province.proname }}</a>
             {% else %}
             -
             {% endif %}
         </td>
         <td class="field-address">
             {% if row.province %}
-            <a href="{% url 'demo:view' row.province.district.slug %}">{{ row.province.district.disname }}</a>
+            <a href="{% url 'demo:district' row.province.district.slug %}">{{ row.province.district.disname }}</a>
             {% else %}
             -
             {% endif %}
         </td>
         <td class="field-address">
             {% if row.province %}
-            <a href="{% url 'demo:view' row.province.district.city.slug %}">{{ row.province.district.city.cityname }}</a>
+            <a href="{% url 'demo:city' row.province.district.city.slug %}">{{ row.province.district.city.cityname }}</a>
             {% else %}
             -
             {% endif %}
@@ -100,25 +100,11 @@
     </tbody>
 </table>
 </div>
-<p class="paginator">
-     <span class="step-links">
-        {% if users.has_previous %}
-            <a href="?page={{ users.previous_page_number }}">Previous</a>
-        {% endif %}
-    </span>
-    <span class="current">
-        Page {{ users.number }} of {{ users.paginator.num_pages }}.
-    </span>
-    <span>
-        {% if users.has_next %}
-            <a href="?page={{ users.next_page_number }}">Next</a>
-        {% endif %}
-    </span>
-</p>
+
 {% endblock %}
 
 {% block chart %}
-{% if p != '' %}
+{%if data%}
 <div class="breadcrumbs">
     <i class="fas fa-chart-pie" id="pie"></i>
     <i class="fas fa-chart-bar" id="bar"></i>
@@ -136,16 +122,16 @@ function drawChart() {
     const bar = document.querySelector("#bar");
     let chart = document.querySelector('#chart');
  var data = google.visualization.arrayToDataTable([
-  ['F', '{{p.title}}',{ role: 'style' }],
-  ['F0', {{ p.f0|length }},'stroke-color: #871B47; stroke-opacity: 0.6; stroke-width: 8; fill-color: #BC5679; fill-opacity: 0.2'],
-  ['F1', {{ p.f1|length }},'stroke-color: #703593; stroke-opacity: 0.6; stroke-width: 4; fill-color: #703593; fill-opacity: 0.2'],
-  ['F2', {{ p.f2|length }},'stroke-color: #76A7FA; stroke-opacity: 0.6; stroke-width: 4; fill-color: #76A7FA; fill-opacity: 0.2'],
-  ['F3', {{ p.f3|length }},'stroke-color: #50CB93; stroke-opacity: 0.6; stroke-width: 8; fill-color: #50CB93; fill-opacity: 0.2'],
+  ['F', '{{data.title}}',{ role: 'style' }],
+  ['F0', {{ data.f0 }},'stroke-color: #871B47; stroke-opacity: 0.6; stroke-width: 8; fill-color: #BC5679; fill-opacity: 0.2'],
+  ['F1', {{ data.f1 }},'stroke-color: #703593; stroke-opacity: 0.6; stroke-width: 4; fill-color: #703593; fill-opacity: 0.2'],
+  ['F2', {{ data.f2 }},'stroke-color: #76A7FA; stroke-opacity: 0.6; stroke-width: 4; fill-color: #76A7FA; fill-opacity: 0.2'],
+  ['F3', {{ data.f3 }},'stroke-color: #50CB93; stroke-opacity: 0.6; stroke-width: 8; fill-color: #50CB93; fill-opacity: 0.2'],
 ]);
 
   // Optional; add a title and set the width and height of the chart
   var options = {
-        'title':'Thống kê {{p.title}}'
+        'title':'Thống kê các ca nhiễm ở {{data.title}}'
    };
 
   //Display the chart inside the <div> element with id="piechart"
@@ -176,7 +162,7 @@ var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
   return new bootstrap.Tooltip(tooltipTriggerEl)
 })
 </script>
-{% endif %}
+{%endif%}
 {% endblock%}
 
 
