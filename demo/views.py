@@ -126,15 +126,18 @@ def district(request, f):
                  })
     # for chart
     labels = []
+    datanew = []
     data = []
     for entry in queryset:
         labels.append(entry.proname)
         d = Demo.objects.filter(created_at__year=date.year, created_at__month=date.month,
                                created_at__day=date.day, province=entry.id).annotate(Count('created_at'))
-        data.append(d.count())
+        d1 = Demo.objects.filter(status=f0,province=entry.id).annotate(Count('status'))
+        data.append(d1.count())
+        datanew.append(d.count())
 
 
-    return render(request, 'demo/district.html', {'total': total, 'detail': detail, 'data': data,'labels':labels})
+    return render(request, 'demo/district.html', {'total': total, 'detail': detail, 'data': data,'datanew':datanew,'labels':labels})
 
 
 def province(request, f):

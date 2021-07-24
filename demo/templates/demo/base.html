@@ -53,10 +53,10 @@
           <a class="nav-link" href="{% url 'demo:view' 'f0' %}">F0</a>
         </li>
           <li class="nav-item">
-          <a class="nav-link" href="{% url 'demo:view' 'f0' %}">F1</a>
+          <a class="nav-link" href="{% url 'demo:view' 'f1' %}">F1</a>
         </li>
           <li class="nav-item">
-          <a class="nav-link" href="{% url 'demo:view' 'f0' %}">F2</a>
+          <a class="nav-link" href="{% url 'demo:view' 'f2' %}">F2</a>
         </li>
           <li class="nav-item">
           <a class="nav-link" href="{% url 'demo:city' 'binh-phuoc' %}">Tỉnh Bình Phước</a>
@@ -102,6 +102,8 @@
       $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
     });
   });
+  //tooltip
+   $('[data-toggle="tooltip"]').tooltip()
 });
 </script>
 </body>

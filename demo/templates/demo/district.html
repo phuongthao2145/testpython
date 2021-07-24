@@ -67,31 +67,34 @@
 {% block chart %}
 {% if p != '' %}
 <div class="breadcrumbs">
-    <i class="fas fa-chart-line" id="line"></i>
+    <i class="fas fa-chart-line" id="f" data-toggle="tooltip" data-placement="bottom" title="Ca nhiễm"></i>
+    <i class="fas fa-calendar-alt" id="new" data-toggle="tooltip"
+               data-placement="top" title="Ca nhiễm mới"></i>
 </div>
 <div id="container" style="width:100%;">
     <canvas id="population-chart" data-url=""></canvas>
   </div>
-
   <script>
-
-    $(function () {
     //chart
+    const f = document.querySelector("#f");
+    const newf = document.querySelector("#new");
+    let lable1 = 'Số ca nhiễm';
+    let data1 = {{ data|safe }};
+    let chart = (lable,data1) => {
       var $populationChart = $("#population-chart");
+      console.log(lable)
       $.ajax({
         url: $populationChart.data("url"),
         success: function (data) {
-
           var ctx = $populationChart[0].getContext("2d");
-
           new Chart(ctx, {
             type: 'bar',
             data: {
               labels: {{ labels|safe }},
               datasets: [{
-                label: 'Ca nhiễm mới',
+                label: lable,
                 backgroundColor: 'blue',
-                data: {{ data|safe }}
+                data: data1
               }]
             },
             options: {
@@ -101,15 +104,26 @@
               },
               title: {
                 display: true,
-                text: 'Thống kê số ca nhiễm trong ngày {% now "d/m/Y" %}'
+                text: 'Số ca nhiễm phân bổ theo xã'
               }
             }
           });
 
         }
       });
+      }
+    chart(lable1,data1);
+    f.onclick = () => {
+         lable1 = 'Số ca nhiễm';
+         data1 = {{ data|safe }};
+         chart(lable1,data1);
+    }
+    newf.onclick = () => {
+         lable1 = 'Số ca nhiễm mới ngày {% now "d/m/Y" %}';
+         data1 = {{ datanew|safe }};
+         chart(lable1,data1);
+    }
 
-    });
 
   </script>
 {% endif %}
