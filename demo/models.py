@@ -11,7 +11,7 @@ class Demo(models.Model):
     province = models.ForeignKey('Province', on_delete=models.RESTRICT, null=True, blank=True,related_name='province')
     district = models.ForeignKey('District', on_delete=models.RESTRICT, null=True, blank=True)
     city = models.ForeignKey('City', on_delete=models.RESTRICT, null=True, blank=True)
-    created_at = models.DateTimeField('date published')
+    created_at = models.DateTimeField('date published',auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True, blank=True,  null=True,)
     expiration = models.DateTimeField('date expire', blank=True,  null=True)
     test_result = models.ForeignKey('TestResult', on_delete=models.RESTRICT, null=True, blank=True)

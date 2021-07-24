@@ -8,8 +8,9 @@ class DemoAdmin(admin.ModelAdmin):
         (None, {'fields': ('f_status', 'test_result', 'expiration','isolation_area')})
     ]
     list_display = ('id', 'patientcode', 'name', 'status', 'f_status', 'phone',
-                    'address', 'province','created_at', 'expiration', 'test_result','isolation_area')
-    search_fields = ['patientcode']
+                    'address', 'province','created_at', 'updated_at','expiration', 'test_result','isolation_area')
+    readonly_fields = ("created_at", "updated_at")
+    search_fields = ['patientcode','id','name']
 
 class ProvinceAdmin(admin.ModelAdmin):
     fields = ['proname', 'slug', 'district','tag']
