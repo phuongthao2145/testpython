@@ -11,7 +11,7 @@
             <th>Số Ca F0</th>
             <th>Số Ca F1</th>
             <th>Số Ca F2</th>
-            <th>Tong số lượng cách ly tại {{users.0.district}}</th>
+            <th>Tổng số lượng cách ly</th>
             <th>Số lượng ca nhiễm mới ngày {% now "d/m/Y" %}</th>
         </tr>
         </thead>
@@ -29,7 +29,7 @@
 <input class="form-control" id="myInput" type="text" placeholder="Tìm..">
 <div style="overflow-x:auto; overflow-y:auto; max-height:500px">
     <table class="table table-striped table-hover js-sort-table table-responsive">
-        <thead class="sticky-top bg-light">
+        <thead class="sticky-top bg-light" style="z-index:5">
         <tr>
             <th scope="col">Tên </th>
             <th scope="col">Số ca F0</th>
@@ -82,7 +82,6 @@
     let data1 = {{ data|safe }};
     let chart = (lable,data1) => {
       var $populationChart = $("#population-chart");
-      console.log(lable)
       $.ajax({
         url: $populationChart.data("url"),
         success: function (data) {
