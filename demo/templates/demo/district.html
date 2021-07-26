@@ -66,64 +66,29 @@
 
 {% block chart %}
 {% if p != '' %}
-<div class="breadcrumbs">
-    <i class="fas fa-chart-line" id="f" data-toggle="tooltip" data-placement="bottom" title="Ca nhiễm"></i>
-    <i class="fas fa-calendar-alt" id="new" data-toggle="tooltip"
-               data-placement="top" title="Ca nhiễm mới"></i>
+
+<div class="container">
+    <div id="combochart" style="height:500px;">
+    </div>
 </div>
-<div id="container" style="width:100%;">
-    <canvas id="population-chart" data-url=""></canvas>
-  </div>
   <script>
     //chart
-    const f = document.querySelector("#f");
-    const newf = document.querySelector("#new");
-    let lable1 = 'Số ca nhiễm';
-    let data1 = {{ data|safe }};
-    let chart = (lable,data1) => {
-      var $populationChart = $("#population-chart");
-      $.ajax({
-        url: $populationChart.data("url"),
-        success: function (data) {
-          var ctx = $populationChart[0].getContext("2d");
-          new Chart(ctx, {
-            type: 'bar',
-            data: {
-              labels: {{ labels|safe }},
-              datasets: [{
-                label: lable,
-                backgroundColor: 'blue',
-                data: data1
-              }]
-            },
-            options: {
-              responsive: true,
-              legend: {
-                position: 'top',
-              },
-              title: {
-                display: true,
-                text: 'Số ca nhiễm phân bổ theo xã'
-              }
-            }
-          });
+        google.charts.load('current', {'packages':['corechart']});
+        google.charts.setOnLoadCallback(drawVisualization);
+        console.log({{combo|safe}})
+        function drawVisualization() {
+        // Some raw data (not necessarily accurate)
+        var data = google.visualization.arrayToDataTable({{combo|safe}});
 
-        }
-      });
+        var options = {
+          title : 'Số ca nhiễm phân bổ theo xã',
+          seriesType: 'bars',
+          series: {1: {type: 'line'}}
+        };
+
+        var chart = new google.visualization.ComboChart(document.getElementById('combochart'));
+        chart.draw(data, options);
       }
-    chart(lable1,data1);
-    f.onclick = () => {
-         lable1 = 'Số ca nhiễm';
-         data1 = {{ data|safe }};
-         chart(lable1,data1);
-    }
-    newf.onclick = () => {
-         lable1 = 'Số ca nhiễm mới ngày {% now "d/m/Y" %}';
-         data1 = {{ datanew|safe }};
-         chart(lable1,data1);
-    }
-
-
   </script>
 {% endif %}
 {% endblock%}
